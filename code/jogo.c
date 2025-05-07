@@ -244,7 +244,13 @@
     }
 
     void DesenharPrincesa(const Princesa* princesa) {
-        DrawTexture(princesa->textura, princesa->posicao.x - princesa->largura / 2, princesa->posicao.y - princesa->altura / 2, WHITE);
+        float escala = 1.3f;
+        Vector2 posicao = {
+            princesa->posicao.x - (princesa->largura * escala) / 2,
+            princesa->posicao.y - (princesa->altura * escala) / 2
+        };
+        
+        DrawTextureEx(princesa->textura, posicao, 0.0f, escala, WHITE);
     }
 
     void AtualizarAtaques(Princesa* princesa) {
