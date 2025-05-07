@@ -24,6 +24,13 @@
         int vida;
     } Vilao;
 
+    typedef struct OrbeXP {
+        Vector2 posicao;
+        bool ativo;
+        struct OrbeXP* proximo;
+        int valorXP;
+    } OrbeXP;
+
     typedef struct Princesa {
         Vector2 posicao;
         Texture2D textura;
@@ -50,9 +57,14 @@
         float bonusVelocidadeAtaque;
         int bonusDano;
         int vidasExtras;
+        OrbeXP* orbesXP;
+        int xpAtual;
+        int xpParaProximoNivel;
+        Texture2D texturaOrbeXP; 
     } Princesa;
+    
 
-    void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, const char* imgVilao, const char* imgFundo, int x, int y);
+    void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, const char* imgVilao, const char* imgFundo, const char* imgOrbeXP, int x, int y);
     void AtualizarPrincesa(Princesa* princesa, int larguraTela, int alturaTela);
     void DesenharPrincesa(const Princesa* princesa);
     void AtualizarAtaques(Princesa* princesa);
@@ -62,6 +74,9 @@
     void VerificarColisoes(Princesa* princesa);
     void DesenharInterface(const Princesa* princesa);
     void LiberarMemoria(Princesa* princesa);
+    void CriarOrbeXP(Princesa* princesa, Vector2 posicao) ;
+    bool AtualizarOrbesXP(Princesa* princesa);
+    void DesenharOrbesXP(const Princesa* princesa);
 
     int main(void) {
         const int larguraTela = 800;
@@ -71,7 +86,7 @@
         SetTargetFPS(60);
 
         Princesa princesa;
-        IniciarPrincesa(&princesa, "assets/princesa.png", "assets/ataque.png", "assets/viloes.png", "assets/fundo.png", larguraTela / 2, alturaTela / 2);
+        IniciarPrincesa(&princesa, "assets/princesa.png", "assets/ataque.png", "assets/viloes.png", "assets/fundo.png", "assets/xp_basica.png", larguraTela / 2, alturaTela / 2);
 
         double tempoInicio = GetTime();
         bool venceu = false;
@@ -82,6 +97,7 @@
             if (princesa.vida <= 0) break;
             
             BeginDrawing();
+
             
             if (estado == JOGANDO) {
                 AtualizarPrincesa(&princesa, larguraTela, alturaTela);
@@ -90,18 +106,18 @@
                 VerificarColisoes(&princesa);
         
                 princesa.tempoJogo = GetTime() - tempoInicio;
-                if ((int)princesa.tempoJogo / 30 > princesa.nivel - 1) {
-                    princesa.nivel++;
-                    princesa.inimigosPorNivel += 2;
-                    princesa.viloesCriadosNoNivel = 0;
+        
+                if (AtualizarOrbesXP(&princesa)) {
                     estado = ESCOLHENDO_UPGRADE;
                 }
-        
+
+                princesa.tempoJogo = GetTime() - tempoInicio;
 
                 DrawTexture(princesa.fundo, 0, 0, WHITE);
                 DesenharPrincesa(&princesa);
                 DesenharAtaques(&princesa);
                 DesenharViloes(&princesa);
+                DesenharOrbesXP(&princesa);
                 DesenharInterface(&princesa);
             } 
             else if (estado == ESCOLHENDO_UPGRADE) {
@@ -118,7 +134,7 @@
                     princesa.bonusDano++;
                     estado = JOGANDO;
                 } else if (IsKeyPressed(KEY_THREE)) {
-                    princesa.vidasExtras++;
+                    princesa.vida++;
                     estado = JOGANDO;
                 }
             }
@@ -153,7 +169,8 @@
         return 0;
     }
 
-    void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, const char* imgVilao, const char* imgFundo, int x, int y) {
+    void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, 
+        const char* imgVilao, const char* imgFundo, const char* imgOrbeXP, int x, int y) {
         princesa->textura = LoadTexture(imgPrincesa);
         princesa->texturaAtaque = LoadTexture(imgAtaque);
         princesa->texturaVilao = LoadTexture(imgVilao);
@@ -179,7 +196,10 @@
         princesa->bonusVelocidadeAtaque = 1.0f;
         princesa->bonusDano = 1;
         princesa->vidasExtras = 0;
-
+        princesa->texturaOrbeXP = LoadTexture(imgOrbeXP);
+        princesa->orbesXP = NULL;
+        princesa->xpAtual = 0;
+        princesa->xpParaProximoNivel = 10;
     }
 
     void AtualizarPrincesa(Princesa* princesa, int larguraTela, int alturaTela) {
@@ -301,37 +321,80 @@
     void VerificarColisoes(Princesa* princesa) {
         Vilao* v = princesa->viloes;
         while (v != NULL) {
+            if (v->ativo && CheckCollisionCircles(princesa->posicao, princesa->largura / 2, v->posicao, princesa->larguraVilao / 2)) {
+                v->ativo = false;
+                princesa->vida--;
+            }
+    
             Ataque* a = princesa->ataques;
             while (a != NULL) {
-                if (a->ativo && v->ativo && CheckCollisionCircles(a->posicao, 10, v->posicao, 20)) {
+                if (v->ativo && a->ativo && CheckCollisionCircles(a->posicao, princesa->larguraAtaque / 2, v->posicao, princesa->larguraVilao / 2)) {
                     a->ativo = false;
                     v->vida -= princesa->bonusDano;
                     if (v->vida <= 0) {
                         v->ativo = false;
                         princesa->pontos++;
+                        CriarOrbeXP(princesa, v->posicao);
                     }
                 }
                 a = a->proximo;
             }
-            
-            if (v->ativo && CheckCollisionCircles(princesa->posicao, 20, v->posicao, 20)) {
-                v->ativo = false;
-                princesa->vida--;
-                if (princesa->vidasExtras > 0) {
-                    princesa->vidasExtras--;
-                    princesa->vida++;
-                }
-            }  
-            
             v = v->proximo;
         }
-    }
+    }    
 
     void DesenharInterface(const Princesa* princesa) {
         DrawText(TextFormat("Pontos: %d", princesa->pontos), 10, 10, 20, GREEN);
-        DrawText(TextFormat("Vida: %d (+%d)", princesa->vida, princesa->vidasExtras), 10, 130, 20, RED);
+        DrawText(TextFormat("Vida: %d", princesa->vida), 10, 40, 20, RED);
         DrawText(TextFormat("Tempo: %02d:%02d", (int)princesa->tempoJogo / 60, (int)princesa->tempoJogo % 60), 10, 70, 20, YELLOW);
         DrawText(TextFormat("Nivel: %d", princesa->nivel), 10, 100, 20, BLUE);
+        DrawText(TextFormat("XP: %d/%d", princesa->xpAtual, princesa->xpParaProximoNivel), 10, 130, 20, YELLOW);
+    }
+
+    void CriarOrbeXP(Princesa* princesa, Vector2 posicao) {
+        OrbeXP* novo = (OrbeXP*)malloc(sizeof(OrbeXP));
+        novo->posicao = posicao;
+        novo->ativo = true;
+        novo->valorXP = 1;
+        novo->proximo = princesa->orbesXP;
+        princesa->orbesXP = novo;
+    }
+    
+    bool AtualizarOrbesXP(Princesa* princesa) {
+        bool levelUp = false;
+        OrbeXP* atual = princesa->orbesXP;
+        while (atual != NULL) {
+            if (atual->ativo) {
+                if (CheckCollisionCircles(princesa->posicao, 20, atual->posicao, 15)) {
+                    atual->ativo = false;
+                    princesa->xpAtual += atual->valorXP;
+                    
+                    if (princesa->xpAtual >= princesa->xpParaProximoNivel) {
+                        princesa->xpAtual -= princesa->xpParaProximoNivel;
+                        princesa->nivel++;
+                        princesa->inimigosPorNivel += 2;
+                        princesa->viloesCriadosNoNivel = 0;
+                        princesa->xpParaProximoNivel = princesa->nivel * 10;
+                        levelUp = true;
+                    }
+                }
+            }
+            atual = atual->proximo;
+        }
+        return levelUp;
+    }
+    
+    void DesenharOrbesXP(const Princesa* princesa) {
+        OrbeXP* atual = princesa->orbesXP;
+        while (atual != NULL) {
+            if (atual->ativo) {
+                DrawTexture(princesa->texturaOrbeXP, 
+                           atual->posicao.x - princesa->texturaOrbeXP.width/2, 
+                           atual->posicao.y - princesa->texturaOrbeXP.height/2, 
+                           GREEN);
+            }
+            atual = atual->proximo;
+        }
     }
 
     void LiberarMemoria(Princesa* princesa) {
@@ -339,6 +402,7 @@
         UnloadTexture(princesa->texturaAtaque);
         UnloadTexture(princesa->texturaVilao);
         UnloadTexture(princesa->fundo);
+        UnloadTexture(princesa->texturaOrbeXP); 
 
         Ataque* a = princesa->ataques;
         while (a != NULL) {
@@ -353,4 +417,12 @@
             free(v);
             v = prox;
         }
+
+        OrbeXP* o = princesa->orbesXP;
+        while (o != NULL) {
+            OrbeXP* prox = o->proximo;
+            free(o);
+            o = prox;
+        }
+        
     }
