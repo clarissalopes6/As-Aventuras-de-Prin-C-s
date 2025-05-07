@@ -175,6 +175,7 @@
         princesa->texturaAtaque = LoadTexture(imgAtaque);
         princesa->texturaVilao = LoadTexture(imgVilao);
         princesa->fundo = LoadTexture(imgFundo);
+        princesa->texturaOrbeXP = LoadTexture(imgOrbeXP);
         princesa->largura = princesa->textura.width;
         princesa->altura = princesa->textura.height;
         princesa->larguraAtaque = princesa->texturaAtaque.width;
@@ -196,7 +197,6 @@
         princesa->bonusVelocidadeAtaque = 1.0f;
         princesa->bonusDano = 1;
         princesa->vidasExtras = 0;
-        princesa->texturaOrbeXP = LoadTexture(imgOrbeXP);
         princesa->orbesXP = NULL;
         princesa->xpAtual = 0;
         princesa->xpParaProximoNivel = 10;
@@ -391,7 +391,7 @@
                 DrawTexture(princesa->texturaOrbeXP, 
                            atual->posicao.x - princesa->texturaOrbeXP.width/2, 
                            atual->posicao.y - princesa->texturaOrbeXP.height/2, 
-                           GREEN);
+                           WHITE);
             }
             atual = atual->proximo;
         }
