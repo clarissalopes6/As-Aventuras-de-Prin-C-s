@@ -61,8 +61,8 @@ typedef struct Princesa {
     int xpAtual;
     int xpParaProximoNivel;
     Texture2D texturaOrbeXP;
+    Sound somOrbeXP[3];
     Sound somGameOver;
-    Sound somOrbeXP;
     Sound somUpgrade;
 } Princesa;
 
@@ -88,7 +88,12 @@ int main(void) {
     InitWindow(larguraTela, alturaTela, "As Aventuras de Prin C's");
     SetTargetFPS(60);
     
+    SetAudioStreamBufferSizeDefault(4096);
     InitAudioDevice(); 
+    Sound Musica = LoadSound("assets/Musica.wav");
+    SetSoundPan(Musica, true);
+    PlaySound(Musica);
+    SetSoundVolume(Musica, 0.2f);
 
     Princesa princesa;
     IniciarPrincesa(&princesa, "assets/princesa.png", "assets/ataque.png", "assets/viloes.png", "assets/fundo.png", "assets/xp_basica.png", larguraTela / 2, alturaTela / 2);
@@ -114,7 +119,6 @@ int main(void) {
     
             if (AtualizarOrbesXP(&princesa)) {
                 estado = ESCOLHENDO_UPGRADE;
-                PlaySound(princesa.somUpgrade);
             }
 
             princesa.tempoJogo = GetTime() - tempoInicio;
@@ -133,15 +137,20 @@ int main(void) {
             DrawText("2 - Maior dano (mata vilão com 1 tiro)", 200, 240, 20, RED);
             DrawText("3 - +1 Vida", 200, 280, 20, BLUE);
         
-            if (IsKeyPressed(KEY_ONE)) {
+             if (IsKeyPressed(KEY_ONE)) {
                 princesa.bonusVelocidadeAtaque *= 0.8f;
                 estado = JOGANDO;
+                PlaySound(princesa.somUpgrade);
             } else if (IsKeyPressed(KEY_TWO)) {
                 princesa.bonusDano++;
                 estado = JOGANDO;
+                PlaySound(princesa.somUpgrade);
+
             } else if (IsKeyPressed(KEY_THREE)) {
                 princesa.vida++;
                 estado = JOGANDO;
+                PlaySound(princesa.somUpgrade);
+
             }
         }
         
@@ -150,6 +159,7 @@ int main(void) {
         venceu = (princesa.nivel >= 10); 
     }
     if (princesa.vida <= 0) {
+        StopSound(Musica); 
         PlaySound(princesa.somGameOver);
         BeginDrawing();
         ClearBackground(BLACK);
@@ -172,6 +182,7 @@ int main(void) {
     }
 
     LiberarMemoria(&princesa);
+    UnloadSound(Musica);
     CloseAudioDevice(); 
     CloseWindow();
     return 0;
@@ -210,9 +221,14 @@ void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* im
     princesa->xpParaProximoNivel = 10;
     
     princesa->somGameOver = LoadSound("assets/Game Over.wav");
-    princesa->somOrbeXP = LoadSound("assets/OrbeXP.wav");
     princesa->somUpgrade = LoadSound("assets/Upgrade.wav");
-}
+    for (int i = 0; i < 3; i++) {
+        princesa->somOrbeXP[i] = LoadSound("assets/OrbeXP.wav");
+        SetSoundVolume(princesa->somOrbeXP[i], 0.5f);
+    }
+    
+    SetSoundVolume(princesa->somUpgrade, 0.5f);
+} 
 
 void AtualizarPrincesa(Princesa* princesa, int larguraTela, int alturaTela) {
     if (IsKeyDown(KEY_W)) princesa->posicao.y -= princesa->velocidade;
@@ -377,22 +393,25 @@ void CriarOrbeXP(Princesa* princesa, Vector2 posicao) {
     princesa->orbesXP = novo;
 }
 
+
 bool AtualizarOrbesXP(Princesa* princesa) {
     bool levelUp = false;
+    static int currentOrbeSound = 0;  
+    
     OrbeXP* atual = princesa->orbesXP;
     while (atual != NULL) {
         if (atual->ativo) {
             if (CheckCollisionCircles(princesa->posicao, 20, atual->posicao, 15)) {
                 atual->ativo = false;
                 princesa->xpAtual += atual->valorXP;
-                PlaySound(princesa->somOrbeXP);
+                
+                PlaySound(princesa->somOrbeXP[currentOrbeSound]);
+                currentOrbeSound = (currentOrbeSound + 1) % 3;
                 
                 if (princesa->xpAtual >= princesa->xpParaProximoNivel) {
-                    princesa->xpAtual -= princesa->xpParaProximoNivel;
-                    princesa->nivel++;
-                    princesa->inimigosPorNivel += 2;
-                    princesa->viloesCriadosNoNivel = 0;
-                    princesa->xpParaProximoNivel = princesa->nivel * 10;
+                    princesa->nivel++;  
+                    princesa->xpAtual -= princesa->xpParaProximoNivel;  
+                    princesa->xpParaProximoNivel = (int)(princesa->xpParaProximoNivel * 1.2f);  
                     levelUp = true;
                 }
             }
@@ -423,7 +442,9 @@ void LiberarMemoria(Princesa* princesa) {
     UnloadTexture(princesa->texturaOrbeXP); 
     
     UnloadSound(princesa->somGameOver);
-    UnloadSound(princesa->somOrbeXP);
+    for (int i = 0; i < 3; i++) {
+        UnloadSound(princesa->somOrbeXP[i]);
+    }
     UnloadSound(princesa->somUpgrade);
 
     Ataque* a = princesa->ataques;
