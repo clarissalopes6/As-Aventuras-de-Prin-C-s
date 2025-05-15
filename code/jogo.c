@@ -312,7 +312,7 @@ void DesenharAtaques(const Princesa* princesa) {
 }
 
     void AtualizarViloes(Princesa* princesa, int larguraTela, int alturaTela) {
-        if (GetRandomValue(0, 100) < (1.5 + princesa->nivel)) {
+        if (GetRandomValue(0, 100) < (2 + princesa->nivel)) {
             Vilao* novo = (Vilao*)malloc(sizeof(Vilao));
             //novo->posicao = (Vector2){ GetRandomValue(0, larguraTela), GetRandomValue(0, alturaTela/2) };
             int lado = GetRandomValue(0, 3); 
@@ -372,7 +372,7 @@ void DesenharViloes(const Princesa* princesa) {
                     v->vida -= princesa->bonusDano;
                     if (v->vida <= 0) {
                         v->ativo = false;
-                        princesa->pontos++; 
+                        princesa->pontos++;
                         CriarOrbeXP(princesa, v->posicao);
                     }
                 }
@@ -384,7 +384,7 @@ void DesenharViloes(const Princesa* princesa) {
 
     void DesenharInterface(const Princesa* princesa) {
         DrawText(TextFormat("Pontos: %d", princesa->pontos), 10, 10, 20, GREEN);
-        DrawText(TextFormat("Vidas: %d", princesa->vida), 10, 40, 20, RED);
+        DrawText(TextFormat("Vida: %d", princesa->vida), 10, 40, 20, RED);
         DrawText(TextFormat("Tempo: %02d:%02d", (int)princesa->tempoJogo / 60, (int)princesa->tempoJogo % 60), 10, 70, 20, YELLOW);
         DrawText(TextFormat("Nivel: %d", princesa->nivel), 10, 100, 20, BLUE);
         DrawText(TextFormat("XP: %d/%d", princesa->xpAtual, princesa->xpParaProximoNivel), 10, 130, 20, YELLOW);
