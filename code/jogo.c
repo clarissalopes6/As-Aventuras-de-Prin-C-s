@@ -230,11 +230,16 @@ void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* im
     SetSoundVolume(princesa->somUpgrade, 0.5f);
 } 
 
-void AtualizarPrincesa(Princesa* princesa, int larguraTela, int alturaTela) {
-    if (IsKeyDown(KEY_W)) princesa->posicao.y -= princesa->velocidade;
-    if (IsKeyDown(KEY_S)) princesa->posicao.y += princesa->velocidade;
-    if (IsKeyDown(KEY_A)) princesa->posicao.x -= princesa->velocidade;
-    if (IsKeyDown(KEY_D)) princesa->posicao.x += princesa->velocidade;
+    void AtualizarPrincesa(Princesa* princesa, int larguraTela, int alturaTela) {
+        if (IsKeyDown(KEY_UP)) princesa->posicao.y -= princesa->velocidade;
+        if (IsKeyDown(KEY_DOWN)) princesa->posicao.y += princesa->velocidade;
+        if (IsKeyDown(KEY_LEFT)) princesa->posicao.x -= princesa->velocidade;
+        if (IsKeyDown(KEY_RIGHT)) princesa->posicao.x += princesa->velocidade;
+
+        if (IsKeyDown(KEY_W)) princesa->posicao.y -= princesa->velocidade;
+        if (IsKeyDown(KEY_S)) princesa->posicao.y += princesa->velocidade;
+        if (IsKeyDown(KEY_A)) princesa->posicao.x -= princesa->velocidade;
+        if (IsKeyDown(KEY_D)) princesa->posicao.x += princesa->velocidade;
 
     if (princesa->posicao.x < princesa->largura / 2) princesa->posicao.x = princesa->largura / 2;
     if (princesa->posicao.x > larguraTela - princesa->largura / 2) princesa->posicao.x = larguraTela - princesa->largura / 2;
@@ -306,10 +311,11 @@ void DesenharAtaques(const Princesa* princesa) {
     }
 }
 
-void AtualizarViloes(Princesa* princesa, int larguraTela, int alturaTela) {
-    if (GetRandomValue(0, 100) < (2 + princesa->nivel)) {
-        Vilao* novo = (Vilao*)malloc(sizeof(Vilao));
-        int lado = GetRandomValue(0, 3); 
+    void AtualizarViloes(Princesa* princesa, int larguraTela, int alturaTela) {
+        if (GetRandomValue(0, 100) < (1.5 + princesa->nivel)) {
+            Vilao* novo = (Vilao*)malloc(sizeof(Vilao));
+            //novo->posicao = (Vector2){ GetRandomValue(0, larguraTela), GetRandomValue(0, alturaTela/2) };
+            int lado = GetRandomValue(0, 3); 
 
         if (lado == 0) {
             novo->posicao = (Vector2){ GetRandomValue(0, larguraTela), 0 };
@@ -351,38 +357,38 @@ void DesenharViloes(const Princesa* princesa) {
     }
 }
 
-void VerificarColisoes(Princesa* princesa) {
-    Vilao* v = princesa->viloes;
-    while (v != NULL) {
-        if (v->ativo && CheckCollisionCircles(princesa->posicao, princesa->largura / 2, v->posicao, princesa->larguraVilao / 2)) {
-            v->ativo = false;
-            princesa->vida--;
-        }
-
-        Ataque* a = princesa->ataques;
-        while (a != NULL) {
-            if (v->ativo && a->ativo && CheckCollisionCircles(a->posicao, princesa->larguraAtaque / 2, v->posicao, princesa->larguraVilao / 2)) {
-                a->ativo = false;
-                v->vida -= princesa->bonusDano;
-                if (v->vida <= 0) {
-                    v->ativo = false;
-                    princesa->pontos++;
-                    CriarOrbeXP(princesa, v->posicao);
-                }
+    void VerificarColisoes(Princesa* princesa) {
+        Vilao* v = princesa->viloes;
+        while (v != NULL) {
+            if (v->ativo && CheckCollisionCircles(princesa->posicao, princesa->largura / 2, v->posicao, princesa->larguraVilao / 2)) {
+                v->ativo = false;
+                princesa->vida--;
             }
-            a = a->proximo;
+    
+            Ataque* a = princesa->ataques;
+            while (a != NULL) {
+                if (v->ativo && a->ativo && CheckCollisionCircles(a->posicao, princesa->larguraAtaque / 2, v->posicao, princesa->larguraVilao / 2)) {
+                    a->ativo = false;
+                    v->vida -= princesa->bonusDano;
+                    if (v->vida <= 0) {
+                        v->ativo = false;
+                        princesa->pontos++; 
+                        CriarOrbeXP(princesa, v->posicao);
+                    }
+                }
+                a = a->proximo;
+            }
+            v = v->proximo;
         }
-        v = v->proximo;
-    }
-}    
+    }    
 
-void DesenharInterface(const Princesa* princesa) {
-    DrawText(TextFormat("Pontos: %d", princesa->pontos), 10, 10, 20, GREEN);
-    DrawText(TextFormat("Vida: %d", princesa->vida), 10, 40, 20, RED);
-    DrawText(TextFormat("Tempo: %02d:%02d", (int)princesa->tempoJogo / 60, (int)princesa->tempoJogo % 60), 10, 70, 20, YELLOW);
-    DrawText(TextFormat("Nivel: %d", princesa->nivel), 10, 100, 20, BLUE);
-    DrawText(TextFormat("XP: %d/%d", princesa->xpAtual, princesa->xpParaProximoNivel), 10, 130, 20, YELLOW);
-}
+    void DesenharInterface(const Princesa* princesa) {
+        DrawText(TextFormat("Pontos: %d", princesa->pontos), 10, 10, 20, GREEN);
+        DrawText(TextFormat("Vidas: %d", princesa->vida), 10, 40, 20, RED);
+        DrawText(TextFormat("Tempo: %02d:%02d", (int)princesa->tempoJogo / 60, (int)princesa->tempoJogo % 60), 10, 70, 20, YELLOW);
+        DrawText(TextFormat("Nivel: %d", princesa->nivel), 10, 100, 20, BLUE);
+        DrawText(TextFormat("XP: %d/%d", princesa->xpAtual, princesa->xpParaProximoNivel), 10, 130, 20, YELLOW);
+    }
 
 void CriarOrbeXP(Princesa* princesa, Vector2 posicao) {
     OrbeXP* novo = (OrbeXP*)malloc(sizeof(OrbeXP));
