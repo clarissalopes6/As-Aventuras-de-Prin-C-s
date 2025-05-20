@@ -44,14 +44,17 @@ typedef struct Princesa {
     Vector2 posicao;
     Texture2D textura;
     Texture2D texturaAtaque;
-    Texture2D texturaVilao;
+    Texture2D texturaVilaoFraco;
+    Texture2D texturaVilaoForte;
     Texture2D fundo;
     int largura;
     int altura;
     int larguraAtaque;
     int alturaAtaque;
-    int larguraVilao;
-    int alturaVilao;
+    int larguraVilaoFraco;
+    int alturaVilaoFraco;
+    int larguraVilaoForte;
+    int alturaVilaoForte;
     int velocidade;
     int vida;
     int pontos;
@@ -72,7 +75,7 @@ typedef struct Princesa {
     Texture2D texturaOrbeXP; 
 } Princesa;
 
-void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, const char* imgVilao, const char* imgFundo, const char* imgOrbeXP, int x, int y);
+void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, int x, int y);
 void AtualizarPrincesa(Princesa* princesa, int larguraTela, int alturaTela);
 void DesenharPrincesa(const Princesa* princesa);
 void AtualizarAtaques(Princesa* princesa);
@@ -99,10 +102,9 @@ int main(void) {
     SetTargetFPS(60);
 
     Princesa princesa;
-    IniciarPrincesa(&princesa, "assets/princesa.png", "assets/ataque.png", "assets/viloes.png", "assets/fundo.png", "assets/xp_basica.png", larguraTela / 2, alturaTela / 2);
+    IniciarPrincesa(&princesa, "assets/princesa.png", "assets/ataque.png", "assets/goblin_fraco.png", "assets/goblin_forte.png", "assets/fundo.png", "assets/xp_basica.png", larguraTela / 2, alturaTela / 2);
 
     double tempoInicio = GetTime();
-    bool venceu = false;
 
     EstadoJogo estado = JOGANDO;
 
@@ -215,18 +217,21 @@ int main(void) {
 }
 
 void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, 
-    const char* imgVilao, const char* imgFundo, const char* imgOrbeXP, int x, int y) {
+    const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, int x, int y) {
     princesa->textura = LoadTexture(imgPrincesa);
     princesa->texturaAtaque = LoadTexture(imgAtaque);
-    princesa->texturaVilao = LoadTexture(imgVilao);
+    princesa->texturaVilaoFraco = LoadTexture(imgVilaoFraco);
+    princesa->texturaVilaoForte = LoadTexture(imgVilaoForte);
     princesa->fundo = LoadTexture(imgFundo);
     princesa->texturaOrbeXP = LoadTexture(imgOrbeXP);
     princesa->largura = princesa->textura.width;
     princesa->altura = princesa->textura.height;
     princesa->larguraAtaque = princesa->texturaAtaque.width;
     princesa->alturaAtaque = princesa->texturaAtaque.height;
-    princesa->larguraVilao = princesa->texturaVilao.width;
-    princesa->alturaVilao = princesa->texturaVilao.height;
+    princesa->larguraVilaoFraco = princesa->texturaVilaoFraco.width;
+    princesa->alturaVilaoFraco = princesa->texturaVilaoFraco.height;
+    princesa->larguraVilaoForte = princesa->texturaVilaoForte.width;
+    princesa->alturaVilaoForte = princesa->texturaVilaoForte.height;
     princesa->posicao = (Vector2){x, y};
     princesa->velocidade = 5;
     princesa->vida = 3;
@@ -342,7 +347,13 @@ void AtualizarViloes(Princesa* princesa, int larguraTela, int alturaTela) {
         } else { 
             novo->posicao = (Vector2){ larguraTela, GetRandomValue(0, alturaTela) };
         }
-        novo->vida = 1;
+
+        if (GetRandomValue(0, 100) < 10) {
+            novo->vida = 3;
+        } else {
+            novo->vida = 1;
+        }
+        
         novo->ativo = true;
         novo->proximo = princesa->viloes;
         princesa->viloes = novo;
@@ -353,7 +364,7 @@ void AtualizarViloes(Princesa* princesa, int larguraTela, int alturaTela) {
     while (atual != NULL) {
         if (atual->ativo) {
             Vector2 direcao = Vector2Normalize(Vector2Subtract(princesa->posicao, atual->posicao));
-            atual->posicao = Vector2Add(atual->posicao, Vector2Scale(direcao, 2));
+            atual->posicao = Vector2Add(atual->posicao, Vector2Scale(direcao, 1.5));
             if (atual->posicao.x < 0) atual->posicao.x = 0;
             if (atual->posicao.x > larguraTela) atual->posicao.x = larguraTela;
             if (atual->posicao.y < 0) atual->posicao.y = 0;
@@ -367,7 +378,15 @@ void DesenharViloes(const Princesa* princesa) {
     Vilao* atual = princesa->viloes;
     while (atual != NULL) {
         if (atual->ativo) {
-            DrawTexture(princesa->texturaVilao, atual->posicao.x - princesa->larguraVilao / 2, atual->posicao.y - princesa->alturaVilao / 2, WHITE);
+            if (atual->vida > 1) {
+                DrawTexture(princesa->texturaVilaoForte, 
+                          atual->posicao.x - princesa->larguraVilaoForte / 2, 
+                          atual->posicao.y - princesa->alturaVilaoForte / 2, WHITE);
+            } else {
+                DrawTexture(princesa->texturaVilaoFraco, 
+                          atual->posicao.x - princesa->larguraVilaoFraco / 2, 
+                          atual->posicao.y - princesa->alturaVilaoFraco / 2, WHITE);
+            }
         }
         atual = atual->proximo;
     }
@@ -376,14 +395,14 @@ void DesenharViloes(const Princesa* princesa) {
 void VerificarColisoes(Princesa* princesa) {
     Vilao* v = princesa->viloes;
     while (v != NULL) {
-        if (v->ativo && CheckCollisionCircles(princesa->posicao, princesa->largura / 2, v->posicao, princesa->larguraVilao / 2)) {
+        if (v->ativo && CheckCollisionCircles(princesa->posicao, princesa->largura / 2, v->posicao, princesa->larguraVilaoFraco / 2)) {
             v->ativo = false;
             princesa->vida--;
         }
 
         Ataque* a = princesa->ataques;
         while (a != NULL) {
-            if (v->ativo && a->ativo && CheckCollisionCircles(a->posicao, princesa->larguraAtaque / 2, v->posicao, princesa->larguraVilao / 2)) {
+            if (v->ativo && a->ativo && CheckCollisionCircles(a->posicao, princesa->larguraAtaque / 2, v->posicao, princesa->larguraVilaoFraco / 2)) {
                 a->ativo = false;
                 v->vida -= princesa->bonusDano;
                 if (v->vida <= 0) {
@@ -455,7 +474,8 @@ void DesenharOrbesXP(const Princesa* princesa) {
 void LiberarMemoria(Princesa* princesa) {
     UnloadTexture(princesa->textura);
     UnloadTexture(princesa->texturaAtaque);
-    UnloadTexture(princesa->texturaVilao);
+    UnloadTexture(princesa->texturaVilaoFraco);
+    UnloadTexture(princesa->texturaVilaoForte);
     UnloadTexture(princesa->fundo);
     UnloadTexture(princesa->texturaOrbeXP); 
 
@@ -512,6 +532,7 @@ int VerificarHighScore(HighScore scores[], int score) {
 }
 
 void InserirHighScore(HighScore scores[], int posicao, const char* nome, int score) {
+
     for (int i = MAX_SCORES - 1; i > posicao; i--) {
         scores[i] = scores[i - 1];
     }
@@ -522,20 +543,25 @@ void InserirHighScore(HighScore scores[], int posicao, const char* nome, int sco
 }
 
 void MostrarHighScores(HighScore scores[]) {
-    BeginDrawing();
-    ClearBackground(BLACK);
-    
-    DrawText("HIGH SCORES", 250, 50, 40, YELLOW);
-    
-    for (int i = 0; i < MAX_SCORES; i++) {
-        char texto[100];
-        snprintf(texto, sizeof(texto), "%d. %s: %d", i+1, scores[i].nome, scores[i].score);
-        DrawText(texto, 250, 120 + i * 40, 30, WHITE);
-    }
-    
-    DrawText("Pressione ENTER para continuar", 200, 350, 20, GRAY);
-    EndDrawing();
-    
-    while (!IsKeyPressed(KEY_ENTER)) {
+    bool sair = false; 
+
+    while(!sair && !WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(BLACK);
+        
+        DrawText("HIGH SCORES", 250, 50, 40, YELLOW);
+        
+        for (int i = 0; i < MAX_SCORES; i++) {
+            char texto[100];
+            snprintf(texto, sizeof(texto), "%d. %s: %d", i+1, scores[i].nome, scores[i].score);
+            DrawText(texto, 250, 120 + i * 40, 30, WHITE);
+        }
+        
+        DrawText("Pressione ESC para sair", 200, 350, 20, GRAY);
+        EndDrawing();
+        
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            sair = true;
+        }
     }
 }
