@@ -9,6 +9,10 @@
 #define MAX_SCORES 5
 #define NOME_TAM 20
 
+#define TAMANHO_CELULA 40
+#define MAX_COLUNAS (800 / TAMANHO_CELULA)
+#define MAX_LINHAS (600 / TAMANHO_CELULA)
+
 typedef struct {
     char nome[NOME_TAM];
     int score;
@@ -18,6 +22,12 @@ typedef enum {
     JOGANDO,
     ESCOLHENDO_UPGRADE
 } EstadoJogo;
+
+typedef enum {
+    CELULA_LIVRE,
+    CELULA_OCUPADA_ORBE_VIDA,
+    CELULA_OBSTACULO
+} EstadoCelula;
 
 typedef struct Ataque {
     Vector2 posicao;
@@ -39,6 +49,14 @@ typedef struct OrbeXP {
     struct OrbeXP* proximo;
     int valorXP;
 } OrbeXP;
+
+typedef struct OrbeVida {
+    Vector2 posicao;
+    bool ativo;
+    struct OrbeVida* proximo;
+    int Linha; 
+    int Coluna; 
+} OrbeVida;
 
 typedef struct Princesa {
     Vector2 posicao;
@@ -73,16 +91,21 @@ typedef struct Princesa {
     int xpAtual;
     int xpParaProximoNivel;
     Texture2D texturaOrbeXP; 
+    OrbeVida* orbesVida;        
+    Texture2D texturaOrbeVida;
+    EstadoCelula matrizDeSpawn[MAX_LINHAS][MAX_COLUNAS];
+    int numLinhas;
+    int numColunas;
 } Princesa;
 
-void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, int x, int y);
+void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, const char* imgOrbeVida, int x, int y, int larguraDoJogo, int alturaDoJogo);
 void AtualizarPrincesa(Princesa* princesa, int larguraTela, int alturaTela);
 void DesenharPrincesa(const Princesa* princesa);
 void AtualizarAtaques(Princesa* princesa);
 void DesenharAtaques(const Princesa* princesa);
 void AtualizarViloes(Princesa* princesa, int larguraTela, int alturaTela);
 void DesenharViloes(const Princesa* princesa);
-void VerificarColisoes(Princesa* princesa);
+void VerificarColisoes(Princesa* princesa, int larguraTela, int alturaTela);
 void DesenharInterface(const Princesa* princesa);
 void LiberarMemoria(Princesa* princesa);
 void CriarOrbeXP(Princesa* princesa, Vector2 posicao);
@@ -93,6 +116,9 @@ int VerificarHighScore(HighScore scores[], int score);
 void InserirHighScore(HighScore scores[], int posicao, const char* nome, int score);
 void MostrarHighScores(HighScore scores[]);
 void SalvarHighScores(HighScore scores[]);
+void CriarOrbeVida(Princesa* princesa, int larguraTela, int alturaTela);
+void AtualizarOrbesVida(Princesa* princesa, int larguraTela, int alturaTela);
+void DesenharOrbesVida(const Princesa* princesa);
 
 int main(void) {
     const int larguraTela = 800;
@@ -102,7 +128,7 @@ int main(void) {
     SetTargetFPS(60);
 
     Princesa princesa;
-    IniciarPrincesa(&princesa, "assets/princesa.png", "assets/ataque.png", "assets/goblin_fraco.png", "assets/goblin_forte.png", "assets/fundo.png", "assets/xp_basica.png", larguraTela / 2, alturaTela / 2);
+    IniciarPrincesa(&princesa, "assets/princesa.png", "assets/ataque.png", "assets/goblin_fraco.png", "assets/goblin_forte.png", "assets/fundo.png", "assets/xp_basica.png", "assets/orb_vida.png", larguraTela / 2, alturaTela / 2, larguraTela, alturaTela);
 
     double tempoInicio = GetTime();
 
@@ -120,9 +146,8 @@ int main(void) {
             AtualizarPrincesa(&princesa, larguraTela, alturaTela);
             AtualizarAtaques(&princesa);
             AtualizarViloes(&princesa, larguraTela, alturaTela);
-            VerificarColisoes(&princesa);
-    
-            princesa.tempoJogo = GetTime() - tempoInicio;
+            VerificarColisoes(&princesa, larguraTela, alturaTela);
+            AtualizarOrbesVida(&princesa, larguraTela, alturaTela);
     
             if (AtualizarOrbesXP(&princesa)) {
                 estado = ESCOLHENDO_UPGRADE;
@@ -135,6 +160,7 @@ int main(void) {
             DesenharAtaques(&princesa);
             DesenharViloes(&princesa);
             DesenharOrbesXP(&princesa);
+            DesenharOrbesVida(&princesa);
             DesenharInterface(&princesa);
         } 
         else if (estado == ESCOLHENDO_UPGRADE) {
@@ -217,13 +243,14 @@ int main(void) {
 }
 
 void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* imgAtaque, 
-    const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, int x, int y) {
+    const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, const char* imgOrbeVida, int x, int y, int larguraDoJogo, int alturaDoJogo) {
     princesa->textura = LoadTexture(imgPrincesa);
     princesa->texturaAtaque = LoadTexture(imgAtaque);
     princesa->texturaVilaoFraco = LoadTexture(imgVilaoFraco);
     princesa->texturaVilaoForte = LoadTexture(imgVilaoForte);
     princesa->fundo = LoadTexture(imgFundo);
     princesa->texturaOrbeXP = LoadTexture(imgOrbeXP);
+    princesa->texturaOrbeVida = LoadTexture(imgOrbeVida);
     princesa->largura = princesa->textura.width;
     princesa->altura = princesa->textura.height;
     princesa->larguraAtaque = princesa->texturaAtaque.width;
@@ -248,8 +275,17 @@ void IniciarPrincesa(Princesa* princesa, const char* imgPrincesa, const char* im
     princesa->bonusDano = 1;
     princesa->vidasExtras = 0;
     princesa->orbesXP = NULL;
+    princesa->orbesVida = NULL;
     princesa->xpAtual = 0;
     princesa->xpParaProximoNivel = 10;
+    princesa->numColunas = larguraDoJogo / TAMANHO_CELULA;
+    princesa->numLinhas = alturaDoJogo / TAMANHO_CELULA;
+
+    for (int i = 0; i < princesa->numLinhas; i++) {
+        for (int j = 0; j < princesa->numColunas; j++) {
+            princesa->matrizDeSpawn[i][j] = CELULA_LIVRE;
+        }
+    }
 }
 
 void AtualizarPrincesa(Princesa* princesa, int larguraTela, int alturaTela) {
@@ -392,7 +428,7 @@ void DesenharViloes(const Princesa* princesa) {
     }
 }
 
-void VerificarColisoes(Princesa* princesa) {
+void VerificarColisoes(Princesa* princesa, int larguraTela, int alturaTela) {
     Vilao* v = princesa->viloes;
     while (v != NULL) {
         if (v->ativo && CheckCollisionCircles(princesa->posicao, princesa->largura / 2, v->posicao, princesa->larguraVilaoFraco / 2)) {
@@ -409,6 +445,7 @@ void VerificarColisoes(Princesa* princesa) {
                     v->ativo = false;
                     princesa->pontos++; 
                     CriarOrbeXP(princesa, v->posicao);
+                    CriarOrbeVida(princesa, larguraTela, alturaTela);
                 }
             }
             a = a->proximo;
@@ -471,6 +508,84 @@ void DesenharOrbesXP(const Princesa* princesa) {
     }
 }
 
+void CriarOrbeVida(Princesa* princesa, int larguraTela, int alturaTela) {
+    if (GetRandomValue(0, 1) == 0) {
+        Vector2 posicoesLivres[MAX_LINHAS * MAX_COLUNAS]; 
+
+        int countLivres = 0;
+
+        for (int i = 0; i < princesa->numLinhas; i++) {
+            for (int j = 0; j < princesa->numColunas; j++) {
+                if (princesa->matrizDeSpawn[i][j] == CELULA_LIVRE) {
+                    posicoesLivres[countLivres] = (Vector2){ (float)j, (float)i };
+                    countLivres++;
+                }
+            }
+        }
+
+        if (countLivres == 0) {
+            return;
+        }
+
+        int indiceAleatorio = GetRandomValue(0, countLivres - 1);
+        int colunaEscolhida = (int)posicoesLivres[indiceAleatorio].x;
+        int linhaEscolhida = (int)posicoesLivres[indiceAleatorio].y;
+
+        OrbeVida* novo = (OrbeVida*)malloc(sizeof(OrbeVida));
+
+        novo->posicao.x = (float)(colunaEscolhida * TAMANHO_CELULA) + (TAMANHO_CELULA / 2.0f);
+        novo->posicao.y = (float)(linhaEscolhida * TAMANHO_CELULA) + (TAMANHO_CELULA / 2.0f);
+        novo->ativo = true;
+        novo->Linha = linhaEscolhida; 
+        novo->Coluna = colunaEscolhida;
+
+        princesa->matrizDeSpawn[linhaEscolhida][colunaEscolhida] = CELULA_OCUPADA_ORBE_VIDA;
+
+        novo->proximo = princesa->orbesVida;
+        princesa->orbesVida = novo;
+    }
+}
+
+void AtualizarOrbesVida(Princesa* princesa, int larguraTela, int alturaTela) {
+    OrbeVida* atual = princesa->orbesVida;
+
+    while (atual != NULL) {
+        if (atual->ativo) {
+            float raioPrincesaBase;
+            if (princesa->largura < princesa->altura) {
+                raioPrincesaBase = (float)princesa->largura;
+            } else {
+                raioPrincesaBase = (float)princesa->altura;
+            }
+            float raioPrincesa = (raioPrincesaBase / 2.0f) * 0.8f;
+            float raioOrbe = princesa->texturaOrbeVida.width / 2.0f;
+
+            if (CheckCollisionCircles(princesa->posicao, raioPrincesa, atual->posicao, raioOrbe)) {
+                atual->ativo = false;
+                princesa->vida++;
+                if (atual->Linha >= 0 && atual->Linha < princesa->numLinhas &&
+                    atual->Coluna >= 0 && atual->Coluna < princesa->numColunas) {
+                    princesa->matrizDeSpawn[atual->Linha][atual->Coluna] = CELULA_LIVRE;
+                }
+            }
+        }
+        atual = atual->proximo;
+    }
+}
+
+void DesenharOrbesVida(const Princesa* princesa) {
+    OrbeVida* atual = princesa->orbesVida;
+    while (atual != NULL) {
+        if (atual->ativo) {
+            DrawTexture(princesa->texturaOrbeVida,
+                        atual->posicao.x - princesa->texturaOrbeVida.width / 2,
+                        atual->posicao.y - princesa->texturaOrbeVida.height / 2,
+                        WHITE);
+        }
+        atual = atual->proximo;
+    }
+}
+
 void LiberarMemoria(Princesa* princesa) {
     UnloadTexture(princesa->textura);
     UnloadTexture(princesa->texturaAtaque);
@@ -499,6 +614,13 @@ void LiberarMemoria(Princesa* princesa) {
         free(o);
         o = prox;
     }
+
+    OrbeVida* ov = princesa->orbesVida; 
+    while (ov != NULL) {               
+        OrbeVida* prox = ov->proximo;  
+        free(ov);      
+        ov = prox;          
+    }  
 }
 
 void CarregarHighScores(HighScore scores[]) {
