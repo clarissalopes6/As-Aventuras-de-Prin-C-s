@@ -1,6 +1,6 @@
 TARGET = jogo
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -g -Icode
+CFLAGS = -Wall -Wextra -std=c99 -g -Icode -fPIE
 SDIR = code
 
 SOURCES_NAMES = main princesa ataque vilao orbe highscore jogo

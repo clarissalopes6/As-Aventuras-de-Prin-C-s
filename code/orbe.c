@@ -59,7 +59,7 @@ void liberarOrbesXP(OrbeXP **listaOrbesXP) {
 }
 
 void criarOrbeVida(Princesa *princesa, int larguraTela, int alturaTela) {
-    if (GetRandomValue(0, 1) == 0) {
+    if (GetRandomValue(0, 39) == 0) {
         Vector2 posicoesLivres[MAX_LINHAS * MAX_COLUNAS]; 
 
         int countLivres = 0;
