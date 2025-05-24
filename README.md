@@ -78,6 +78,9 @@ ou
 ```sh
 make clean
 ```
+### ScreenCast da Gameplay
+[Screencast](https://youtu.be/K7HGJKds8LU)
+
 
 ## Créditos
 
