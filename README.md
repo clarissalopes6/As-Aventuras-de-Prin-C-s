@@ -79,8 +79,10 @@ ou
 make clean
 ```
 ### ScreenCast da Gameplay
-[Screencast](https://youtu.be/K7HGJKds8LU)
 
+[Upload Youtube](https://youtu.be/K7HGJKds8LU)
+
+https://github.com/user-attachments/assets/4d39b839-4c15-4a45-b212-a9164f2587bc
 
 ## Créditos
 
