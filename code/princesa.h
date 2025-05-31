@@ -4,7 +4,7 @@
 #include "raylib.h"
 #include "structs.h"
 
-void iniciarPrincesa(Princesa *princesa, const char* imgPrincesa, const char* imgAtaque, const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, const char* imgOrbeVida, int x, int y, int larguraDoJogo, int alturaDoJogo);
+void iniciarPrincesa(Princesa *princesa, const char* imgPrincesa, const char* imgAtaque, const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, const char* imgOrbeVida, int x, int y, int larguraDoJogo, int alturaDoJogo, Sound somDano);
 
 void atualizarPrincesa(Princesa *princesa, int larguraTela, int alturaTela);
 

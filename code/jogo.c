@@ -1,3 +1,4 @@
+#include "raylib.h"
 #include "jogo.h"
 #include "orbe.h"
 #include <stdio.h>
@@ -8,6 +9,7 @@ void verificarColisoes(Princesa *princesa, int larguraTela, int alturaTela) {
         if (v->ativo && CheckCollisionCircles(princesa->posicao, princesa->largura / 2, v->posicao, princesa->larguraVilaoFraco / 2)) {
             v->ativo = false;
             princesa->vida--;
+            PlaySound(princesa->somDano);
         }
 
         Ataque* a = princesa->ataques;

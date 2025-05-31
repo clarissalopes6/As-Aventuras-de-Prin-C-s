@@ -76,6 +76,7 @@ typedef struct Princesa {
     EstadoCelula matrizDeSpawn[MAX_LINHAS][MAX_COLUNAS];
     int numLinhas;
     int numColunas;
+    Sound somDano;
 } Princesa;
 
 #endif

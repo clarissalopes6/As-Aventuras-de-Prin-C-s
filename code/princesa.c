@@ -7,7 +7,7 @@
 #include <float.h>
 
 void iniciarPrincesa(Princesa *princesa, const char* imgPrincesa, const char* imgAtaque, 
-    const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, const char* imgOrbeVida, int x, int y, int larguraDoJogo, int alturaDoJogo) {
+    const char* imgVilaoFraco, const char* imgVilaoForte, const char* imgFundo, const char* imgOrbeXP, const char* imgOrbeVida, int x, int y, int larguraDoJogo, int alturaDoJogo, Sound somDano) {
     princesa->textura = LoadTexture(imgPrincesa);
     princesa->texturaAtaque = LoadTexture(imgAtaque);
     princesa->texturaVilaoFraco = LoadTexture(imgVilaoFraco);
@@ -42,6 +42,7 @@ void iniciarPrincesa(Princesa *princesa, const char* imgPrincesa, const char* im
     princesa->orbesVida = NULL;
     princesa->xpAtual = 0;
     princesa->xpParaProximoNivel = 10;
+    princesa->somDano = somDano;
     
     princesa->numColunas = larguraDoJogo / TAMANHO_CELULA;
     princesa->numLinhas = alturaDoJogo / TAMANHO_CELULA;
