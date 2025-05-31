@@ -1,6 +1,6 @@
-# As Aventuras de Prin-C-s
+# As Aventuras de Prin-C-s 👑.𖥔 ݁ ˖
 
-Um jogo desenvolvido em C utilizando a biblioteca Raylib.
+As Aventuras de Prin C's é um jogo desenvolvido por alunos de Ciência da computação do segundo período, foi programado em C com o auxílio da biblioteca raylib. O jogo se passa em um reino encantado, onde a princesa precisa salvar seu reino de invasores que ameaçam suas terras e seu povoado, junte-se a nós nessa missão que envolve muita magia e bravura!
 
 ## Requisitos
 
