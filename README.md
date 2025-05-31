@@ -1,10 +1,9 @@
-# As Aventuras de Prin-C-s 👑.𖥔 ݁ ˖
 ![As Aventuras de Prin C’s](assets/as%20aventuras%20de%20prin%20C%E2%80%99s.gif)
 
-As Aventuras de Prin C's é um jogo desenvolvido por alunos de Ciência da computação do segundo período, foi programado em C com o auxílio da biblioteca raylib. O jogo se passa em um reino encantado, onde a princesa precisa salvar seu reino de invasores que ameaçam suas terras e seu povoado, junte-se a nós nessa missão que envolve muita magia e bravura!
+As Aventuras de Prin C's é um jogo desenvolvido por alunos de Ciência da computação do segundo período, foi programado em C com o auxílio da biblioteca raylib. O jogo se passa em um reino encantado, onde a princesa precisa salvar seu reino de invasores que ameaçam suas terras e seu povoado, junte-se a nós nessa missão que envolve muita magia e bravura!📖✨🪄
 
 <br>
-<h1><strong>Requisitos</strong></h1>
+<h1><strong>👑 Requisitos</strong></h1>
 
 <p align="center">
 <table>
@@ -12,8 +11,9 @@ As Aventuras de Prin C's é um jogo desenvolvido por alunos de Ciência da compu
 - Compilador C (gcc ou clang)
 - Make
 
+
 <br>
-<h1><strong>Instalação das dependências</strong></h1>
+<h1><strong>👑 Instalação das dependências</strong></h1>
 
 <p align="center">
 <table>
@@ -87,7 +87,7 @@ ou
 make clean
 ```
 <br>
-<h1><strong>Screencast da gameplay</strong></h1>
+<h1><strong>👑 Screencast da gameplay</strong></h1>
 
 <p align="center">
 <table>
@@ -105,19 +105,19 @@ https://github.com/user-attachments/assets/4d39b839-4c15-4a45-b212-a9164f2587bc
     <td align="center">
       <a href="https://github.com/r7fael">
         <img src="https://avatars.githubusercontent.com/r7fael" width="100" style="border-radius: 50%; margin: 10px;" />
-        <br><strong> Rafael Padilha </strong>
+        <br><strong> 👑 Rafael Padilha </strong>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/clarissalopes6">
         <img src="https://avatars.githubusercontent.com/clarissalopes6" width="100" style="border-radius: 50%; margin: 10px;" />
-        <br><strong> Clarissa Lopes </strong>
+        <br><strong> 👑 Clarissa Lopes </strong>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/PedroGarcez13">
         <img src="https://avatars.githubusercontent.com/PedroGarcez13" width="100" style="border-radius: 50%; margin: 10px;" />
-        <br><strong> Pedro Abner</strong>
+        <br><strong> 👑 Pedro Abner</strong>
       </a>
     </td>
   </tr>
