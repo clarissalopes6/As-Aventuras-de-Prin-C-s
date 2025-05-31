@@ -1,15 +1,22 @@
 # As Aventuras de Prin-C-s 👑.𖥔 ݁ ˖
-![as aventuras de prin c's](assets/as aventuras de prin C's.gif)
+![As Aventuras de Prin C’s](assets/as%20aventuras%20de%20prin%20C%E2%80%99s.gif)
 
 As Aventuras de Prin C's é um jogo desenvolvido por alunos de Ciência da computação do segundo período, foi programado em C com o auxílio da biblioteca raylib. O jogo se passa em um reino encantado, onde a princesa precisa salvar seu reino de invasores que ameaçam suas terras e seu povoado, junte-se a nós nessa missão que envolve muita magia e bravura!
 
-## Requisitos
+<br>
+<h1><strong>Requisitos</strong></h1>
 
+<p align="center">
+<table>
 - [Raylib](https://www.raylib.com/)
 - Compilador C (gcc ou clang)
 - Make
 
-## Instalação das Dependências
+<br>
+<h1><strong>Instalação das dependências</strong></h1>
+
+<p align="center">
+<table>
 
 Você pode instalar as dependências automaticamente com:
 
@@ -79,7 +86,11 @@ ou
 ```sh
 make clean
 ```
-### ScreenCast da Gameplay
+<br>
+<h1><strong>Screencast da gameplay</strong></h1>
+
+<p align="center">
+<table>
 
 [Upload Youtube](https://youtu.be/K7HGJKds8LU)
 
