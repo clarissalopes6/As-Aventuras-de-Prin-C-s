@@ -84,6 +84,30 @@ make clean
 
 https://github.com/user-attachments/assets/4d39b839-4c15-4a45-b212-a9164f2587bc
 
-## Créditos
+<br>
+<h1><strong>Equipe</strong></h1>
 
-Desenvolvido por Rafael Padilha, Clarissa Lopes e Pedro Abner.
+<p align="center">
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/r7fael">
+        <img src="https://avatars.githubusercontent.com/r7fael" width="100" style="border-radius: 50%; margin: 10px;" />
+        <br><strong> Rafael Padilha </strong>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/clarissalopes6">
+        <img src="https://avatars.githubusercontent.com/clarissalopes6" width="100" style="border-radius: 50%; margin: 10px;" />
+        <br><strong> Clarissa Lopes </strong>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/PedroGarcez13">
+        <img src="https://avatars.githubusercontent.com/PedroGarcez13" width="100" style="border-radius: 50%; margin: 10px;" />
+        <br><strong> Pedro Abner</strong>
+      </a>
+    </td>
+  </tr>
+</table>
+</p>
